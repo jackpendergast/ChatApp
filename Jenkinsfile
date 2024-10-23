@@ -12,7 +12,7 @@ stage('Build-and-Tag')
 {
     /* This builds the actual image; 
          * This is synonymous to docker build on the command line */
-    app = docker.build('penjack/ChatApp')
+    app = docker.build('penjack/chatapp')
 }
  
 stage('Post-to-dockerhub')
