@@ -1,0 +1,10 @@
+version: '3.3'
+services:
+  snake:
+    image: 'penjack/ChatApp'
+    environment:
+      - "PORT:3700"
+    ports:
+      - "80:3700"
+    volumes:
+      - ./:/app
