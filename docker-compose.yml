@@ -5,6 +5,6 @@ services:
     environment:
       - "PORT:3700"
     ports:
-      - "443:3700"
+      - "80:3700"
     volumes:
       - ./:/app
