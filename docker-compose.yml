@@ -1,6 +1,6 @@
 version: '3.3'
 services:
-  snake:
+  chat:
     image: 'penjack/chatapp'
     environment:
       - "PORT:3700"
