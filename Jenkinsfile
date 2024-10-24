@@ -24,17 +24,19 @@ stage('Post-to-dockerhub')
 }
 
 stage('Prepare Environment') {
-        // Find and stop any Docker container using port 80
-        sh '''
-        CONTAINER_ID=$(docker ps -q --filter "publish=80")
+    // Find and stop any Docker container using port 80 or 443
+    sh '''
+    for PORT in 80 443; do
+        CONTAINER_ID=$(docker ps -q --filter "publish=$PORT")
         if [ -n "$CONTAINER_ID" ]; then
-            echo "Stopping container using port 80: $CONTAINER_ID"
+            echo "Stopping container using port $PORT: $CONTAINER_ID"
             docker stop $CONTAINER_ID
             docker rm $CONTAINER_ID
         else
-            echo "No container using port 80."
+            echo "No container using port $PORT."
         fi
-        '''
+    done
+    '''
 }
  
 stage('Deploy')
