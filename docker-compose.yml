@@ -1,7 +1,7 @@
 version: '3.3'
 services:
   chat:
-    image: 'penjack/chatapp'
+    image: 'penjack/chatapp:latest'
     environment:
       - "PORT:3700"
     ports:
