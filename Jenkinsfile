@@ -18,6 +18,19 @@ stage('SCA-SAST-SNYK-TEST'){
 
 }
 
+stage('SonarQube Analysis') {
+
+        script {
+            def scannerHome = tool 'SonarQubeScanner'
+            withSonarQubeEnv('sonarqube') {
+                sh "${scannerHome}/bin/sonar-scanner \
+                    -Dsonar.projectKey=gameapp \
+                    -Dsonar.sources=."
+            }
+        }
+    }
+}
+
 stage('Build-and-Tag')
 {
     /* This builds the actual image; 
