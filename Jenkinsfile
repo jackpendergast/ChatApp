@@ -3,7 +3,7 @@ pipeline {
     stages {
         stage('CLONE GIT REPOSITORY') {
             agent {
-                label 'ubuntu-Appserver-3120'
+                label 'ubuntu-AppServer-3120'
             }
             steps {
                 checkout scm
@@ -25,7 +25,7 @@ pipeline {
  
         stage('SonarQube Analysis') {
             agent {
-                label 'ubuntu-Appserver-3120'
+                label 'ubuntu-AppServer-3120'
             }
             steps {
                 script {
@@ -41,7 +41,7 @@ pipeline {
  
         stage('BUILD-AND-TAG') {
             agent {
-                label 'ubuntu-Appserver-3120'
+                label 'ubuntu-AppServer-3120'
             }
             steps {
                 script {
@@ -53,7 +53,7 @@ pipeline {
  
         stage('POST-TO-DOCKERHUB') {    
             agent {
-                label 'ubuntu-Appserver-3120'
+                label 'ubuntu-AppServer-3120'
             }
             steps {
                 script {
@@ -67,7 +67,7 @@ pipeline {
 
         stage('Prepare Environment') {
             agent {
-                label 'ubuntu-Appserver-3120'
+                label 'ubuntu-AppServer-3120'
             }
             steps {
                 script {
@@ -88,7 +88,7 @@ pipeline {
  
         stage('DEPLOYMENT') {    
             agent {
-                label 'ubuntu-Appserver-3120'
+                label 'ubuntu-AppServer-3120'
             }
             steps {
                 sh "docker-compose down"
