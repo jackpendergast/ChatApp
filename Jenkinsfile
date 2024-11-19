@@ -77,7 +77,7 @@ pipeline {
             steps {
                 script {
                     // Authenticate with DockerHub and push the built Docker image
-                    docker.withRegistry('https://registry.hub.docker.com', Dockerhub_credentials) {
+                    docker.withRegistry('https://registry.hub.docker.com', DockerhubCredentials) {
                         def app = docker.image(GithubRepo) // Reference the Docker image
                         app.push("latest") // Push the image with the 'latest' tag
                     }
