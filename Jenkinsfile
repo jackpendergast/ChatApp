@@ -1,77 +1,95 @@
 pipeline {
-    agent none
+    agent none // The pipeline does not have a default agent; each stage specifies its own agent.
+    
+    environment{
+        ServerName = 'ubuntu-AppServer-3120' // Server label
+        DockerhubCredentials = 'dockerhub_credentials' // DockerHub credentials ID
+        SnykToken = 'synk_api' // Snyk API token
+        GithubRepo = "penjack/chatapp" // Name of the Github repository
+    }
+
     stages {
-        stage('CLONE GIT REPOSITORY') {
+        stage('CLONING GIT REPOSITORY') {
+            // Cloning the files from github to the Appserver.
             agent {
-                label 'ubuntu-AppServer-3120'
+                // Specifies which server this stage is run on.
+                label ServerName
             }
             steps {
+                // Checkout the source code from the Git repository defined in Jenkins
                 checkout scm
             }
         }  
- 
-        stage('SCA-SAST-SNYK-TEST') {
-            agent any
-            steps {
-                script {
-                    snykSecurity(
-                        snykInstallation: 'Snyk',
-                        snykTokenId: 'synk_api',
-                        severity: 'critical'
-                    )
-                }
-            }
-        }
- 
-        stage('SonarQube Analysis') {
-            agent {
-                label 'ubuntu-AppServer-3120'
-            }
-            steps {
-                script {
-                    def scannerHome = tool 'SonarQubeScanner'
-                    withSonarQubeEnv('sonarqube') {
-                        sh "${scannerHome}/bin/sonar-scanner \
-                            -Dsonar.projectKey=chatapp \
-                            -Dsonar.sources=."
+
+        stage('SECURITY TESTING'){
+            parallel{
+                stage('STATIC SECURITY TESTING WITH SYNK') {
+                    // Static testing of the third party code from github.
+                    agent { label ServerName }
+                    steps {
+                        script {
+                            // Perform static analysis of the project code using Snyk
+                            snykSecurity(
+                                snykInstallation: 'Snyk', // Reference to the configured Snyk installation in Jenkins.
+                                snykTokenId: Synk_api, // Use the provided Snyk API token.
+                                severity: 'critical' // Set the severity level for not allowing code to continue.
+                            )
+                        }
                     }
                 }
-            }
+
+                stage('DYNAMIC SECURITY TESTING WITH SONARQUBE') {
+                    // Dynamic testing of the Developer's code with SonarQube.
+                    agent { label ServerName }
+                    steps {
+                        script {
+                            // Perform dynamic code analysis using SonarQube
+                            def scannerHome = tool 'SonarQubeScanner' // Retrieve the configured SonarQube Scanner
+                            withSonarQubeEnv('sonarqube') { // Use the SonarQube environment defined in Jenkins
+                                sh '''
+                                ${scannerHome}/bin/sonar-scanner \
+                                    -Dsonar.projectKey=chatapp \
+                                    -Dsonar.sources=.
+                                '''
+                            }
+                        }
+                    }
+                }
+            }      
         }
- 
-        stage('BUILD-AND-TAG') {
-            agent {
-                label 'ubuntu-AppServer-3120'
-            }
+        
+
+        stage('BUILD AND TAG IMAGE') {
+            // Build Docker image with the tag "Latest".
+            agent { label ServerName }
             steps {
                 script {
-                    def app = docker.build("penjack/chatapp")
-                    app.tag("latest")
+                    // Build a Docker image for the application
+                    def app = docker.build(GithubRepo) // Build the image with the specified name
+                    app.tag("latest") // Tag the image with 'latest'
                 }
             }
         }
- 
-        stage('POST-TO-DOCKERHUB') {    
-            agent {
-                label 'ubuntu-AppServer-3120'
-            }
+
+        stage('POST IMAGE TO DOCKERHUB') {    
+            // Push the new Docker image to DockerHub with the tag Latest.
+            agent { label ServerName }
             steps {
                 script {
-                    docker.withRegistry('https://registry.hub.docker.com', 'dockerhub_credentials') {
-                        def app = docker.image("penjack/chatapp")
-                        app.push("latest")
+                    // Authenticate with DockerHub and push the built Docker image
+                    docker.withRegistry('https://registry.hub.docker.com', Dockerhub_credentials) {
+                        def app = docker.image(GithubRepo) // Reference the Docker image
+                        app.push("latest") // Push the image with the 'latest' tag
                     }
                 }
             }
         }
 
-        stage('Prepare Environment') {
-            agent {
-                label 'ubuntu-AppServer-3120'
-            }
+        stage('PREPARE ENVIRONMENT') {
+            agent { label ServerName }
             steps {
                 script {
-                    // Find and stop any Docker container using port 80
+                    // Find and stop any Docker container using port 80 so there isn't any conflicts when deploying.
                         sh '''
                         CONTAINER_ID=$(docker ps -q --filter "publish=80")
                         if [ -n "$CONTAINER_ID" ]; then
@@ -85,14 +103,14 @@ pipeline {
                 }
             }
         }
- 
+
         stage('DEPLOYMENT') {    
-            agent {
-                label 'ubuntu-AppServer-3120'
-            }
+            // Deploy the Image.
+            agent { label ServerName }
             steps {
-                sh "docker-compose down"
-                sh "docker-compose up -d"   
+                // Deploy the application using Docker Compose
+                sh "docker-compose down"    // Stop any existing containers defined in the Docker Compose file
+                sh "docker-compose up -d"   // Start the containers in detached mode
             }
         }
     }
