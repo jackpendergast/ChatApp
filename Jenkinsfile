@@ -46,11 +46,11 @@ pipeline {
                             // Perform dynamic code analysis using SonarQube
                             def scannerHome = tool name: 'SonarQubeScanner', type: 'hudson.plugins.sonar.SonarRunnerInstallation'                            
                             withSonarQubeEnv('sonarqube') { // Use the SonarQube environment defined in Jenkins
-                                sh '''
+                                sh """
                                 ${scannerHome}/bin/sonar-scanner \
                                     -Dsonar.projectKey=chatapp \
                                     -Dsonar.sources=.
-                                '''
+                                """
                             }
                         }
                     }
