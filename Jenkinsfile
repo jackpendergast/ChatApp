@@ -31,7 +31,7 @@ pipeline {
                             // Perform static analysis of the project code using Snyk
                             snykSecurity(
                                 snykInstallation: 'Snyk', // Reference to the configured Snyk installation in Jenkins.
-                                snykTokenId: Synk_api, // Use the provided Snyk API token.
+                                snykTokenId: SnykToken, // Use the provided Snyk API token.
                                 severity: 'critical' // Set the severity level for not allowing code to continue.
                             )
                         }
