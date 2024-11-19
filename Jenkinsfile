@@ -47,7 +47,7 @@ pipeline {
                             def scannerHome = tool 'SonarQubeScanner' // Retrieve the configured SonarQube Scanner
                             withSonarQubeEnv('sonarqube') { // Use the SonarQube environment defined in Jenkins
                                 sh '''
-                                ${scannerHome}/bin/sonar-scanner \
+                                ${scannerHome}/home/appserver/jenkins-workspace/tools/hudson.plugins.sonar.SonarRunnerInstallation/SonarQubeScanner/bin/sonar-scanner \
                                     -Dsonar.projectKey=chatapp \
                                     -Dsonar.sources=.
                                 '''
